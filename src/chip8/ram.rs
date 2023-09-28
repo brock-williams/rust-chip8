@@ -3,10 +3,10 @@
 // The first 512 bytes, from 0x000 to 0x1FF, are where the original interpreter was located, and should not be used by programs
 
 // Most Chip-8 programs start at location 0x200 (512), but some begin at 0x600 (1536). Programs beginning at 0x600 are intended for the ETI 660 computer.
-const RAM_SIZE: usize = 4096;
+const RAM_SIZE: usize = 0xFFF;
 const RAM_START: usize = 0x200;
 
-
+#[derive(Debug)]
 pub struct Ram {
     data: [u8; RAM_SIZE]
 }
@@ -45,7 +45,30 @@ impl Ram {
                 i += 1
             }
         }
+        
+        ram
+    }
 
-        return ram;
+    pub fn read(&mut self, i: i16 ) -> u8 {
+        self.data[i as usize]
+    }
+
+    pub fn write(&mut self, i: u16, value: u8) {
+        if i <= RAM_START as u16 { // First 512 bits protected
+            panic!("First 512 bits are protected, tried writing to address {}", i);
+        }
+
+        self.data[i as usize] = value;
+    }
+
+    pub fn read_rom(&mut self, rom: &Vec<u8>) {
+        if rom.len() > RAM_SIZE - RAM_START {
+            panic!("Invalid rom. Length must be below {}", RAM_SIZE-RAM_START);
+        }
+
+        for idx in 0..rom.len() {
+            // Must add RAM_START as offset for protected memory
+            self.data[idx + RAM_START] = rom[idx];
+        }
     }
 }
