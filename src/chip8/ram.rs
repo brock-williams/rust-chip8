@@ -14,12 +14,12 @@ pub struct Ram {
 impl Ram {
     pub fn new() -> Ram {
         let mut ram = Ram {
-            data: [0, RAM_SIZE]
+            data: [0; RAM_SIZE]
         };
         // Programs may also refer to a group of sprites representing the hexadecimal digits 0 through F. 
         // These sprites are 5 bytes long, or 8x5 pixels. The data should be stored in the interpreter area of Chip-8 memory (0x000 to 0x1FF). 
         // Below is a listing of each character's bytes, in binary and hexadecimal:
-        let digits = [[u8; 5]; 16] = [
+        let digits: [[u8; 5]; 16] = [
             [0xF0, 0x90, 0x90, 0x90, 0xF0], // 0
             [0x20, 0x60, 0x20, 0x20, 0x70], // 1
             [0xF0, 0x10, 0xF0, 0x80, 0xF0], // 2
@@ -49,19 +49,19 @@ impl Ram {
         ram
     }
 
-    pub fn read(&mut self, i: i16 ) -> u8 {
+    pub fn read(&mut self, i: u16 ) -> u8 {
         self.data[i as usize]
     }
 
     pub fn write(&mut self, i: u16, value: u8) {
-        if i <= RAM_START as u16 { // First 512 bits protected
-            panic!("First 512 bits are protected, tried writing to address {}", i);
+        if i < RAM_START as u16 { // First 512 bits protected
+            panic!("ERROR: First 512 bits are protected, tried writing to address {}", i);
         }
 
         self.data[i as usize] = value;
     }
 
-    pub fn read_rom(&mut self, rom: &Vec<u8>) {
+    pub fn load_rom(&mut self, rom: &Vec<u8>) {
         if rom.len() > RAM_SIZE - RAM_START {
             panic!("Invalid rom. Length must be below {}", RAM_SIZE-RAM_START);
         }
