@@ -29,7 +29,7 @@ impl Cpu {
         }
     }
 
-    pub fn execute_instruction(&self, ram: &mut Ram, display: &mut Display) {
+    pub fn execute_instruction(&self, ram: &mut Ram, _display: &mut Display) {
         let lo = ram.read(self.pc) as u16;
         let hi = ram.read(self.pc + 1) as u16;
         
