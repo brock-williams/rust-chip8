@@ -18,8 +18,4 @@ fn main() {
     chip8.execute_instruction();
     chip8.execute_instruction();
     chip8.execute_instruction();
-
-
-
-    println!("Hello World!")
 }
