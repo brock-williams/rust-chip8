@@ -90,7 +90,7 @@ impl Cpu {
     // Return from a subroutine.
 
     // The interpreter sets the program counter to the address at the top of the stack, then subtracts 1 from the stack pointer.
-    fn op_ret(&self) -> ProgramCounter {
+    fn op_ret(&mut self) -> ProgramCounter {
         self.sp -= 1;
         ProgramCounter::Jump(self.stack[self.sp as usize])
     }
@@ -106,7 +106,7 @@ impl Cpu {
     // Call subroutine at nnn.
     
     // The interpreter increments the stack pointer, then puts the current PC on the top of the stack. The PC is then set to nnn.
-    fn op_call_addr(&self, nnn: u16) -> ProgramCounter {
+    fn op_call_addr(&mut self, nnn: u16) -> ProgramCounter {
         self.stack[self.sp as usize] = self.pc + OPCODE_SIZE;
         self.sp += 1;
         ProgramCounter::Jump(nnn)
@@ -116,7 +116,7 @@ impl Cpu {
     // Skip next instruction if Vx = kk.
 
     // The interpreter compares register Vx to kk, and if they are equal, increments the program counter by 2
-    fn op_se_byte(&self, vx: u8, kk: u8) -> ProgramCounter {
+    fn op_se_byte(&mut self, vx: u8, kk: u8) -> ProgramCounter {
         let vx_reg = self.regs[vx as usize];
 
         if vx_reg == kk {
@@ -131,7 +131,7 @@ impl Cpu {
     // Skip next instruction if Vx != kk.
 
     // The interpreter compares register Vx to kk, and if they are not equal, increments the program counter by 2.
-    fn op_sne_byte(&self, vx: u8, kk: u8) -> ProgramCounter {
+    fn op_sne_byte(&mut self, vx: u8, kk: u8) -> ProgramCounter {
         let vx_reg = self.regs[vx as usize];
 
         if vx_reg != kk {
@@ -145,7 +145,7 @@ impl Cpu {
     // Skip next instruction if Vx = Vy.
 
     // The interpreter compares register Vx to register Vy, and if they are equal, increments the program counter by 2.
-    fn op_se_regs(&self, vx: u8, vy: u8) -> ProgramCounter {
+    fn op_se_regs(&mut self, vx: u8, vy: u8) -> ProgramCounter {
         let vx_reg = self.regs[vx as usize];
         let vy_reg = self.regs[vy as usize];
 
@@ -155,6 +155,62 @@ impl Cpu {
             ProgramCounter::Next
         }
     }
+
+    // 6xkk - LD Vx, byte
+    // Set Vx = kk.
+
+    // The interpreter puts the value kk into register Vx.
+    fn op_ld_byte(&mut self, vx: u8, kk: u8) -> ProgramCounter {
+        self.regs[vx as usize] = kk;
+        ProgramCounter::Next
+    }
+
+    // 7xkk - ADD Vx, byte
+    // Set Vx = Vx + kk
+
+    // Adds the value kk to the value of register Vx, then stores the result in Vx.
+    fn op_add_byte(&mut self, vx: u8, kk: u8) -> ProgramCounter {
+        let res = (self.regs[vx as usize] as u16) + (kk as u16);
+        self.regs[vx as usize] = result as u8;
+
+        ProgramCounter::Next
+    }
+
+    // 8xy0 - LD Vx, Vy
+    // Set Vx = Vy.
+
+    // Stores the value of register Vy in register Vx.
+    fn op_ld_regs(&mut self, vx: u8, vy: u8) -> ProgramCounter {
+        self.regs[vx as usize] = self.regs[vy as usize];
+        ProgramCounter::Next
+    }
+
+    // 8xy1 - OR Vx, Vy
+    // Set Vx = Vx OR Vy.
+
+    // Performs a bitwise OR on the values of Vx and Vy, then stores the result in Vx
+    fn op_or(&mut self, vx: u8, vy: u8) -> ProgramCounter {
+        let res = self.regs[vx as usize] | self.regs[vy as usize];
+        self.regs[vx as usize] = res;
+        ProgramCounter::Next
+    }
+    // 8xy2 - AND Vx, Vy
+    // Set Vx = Vx AND Vy.
+
+    // Performs a bitwise AND on the values of Vx and Vy, then stores the result in Vx
+    fn op_and(&mut self, vx: u8, vy: u8) -> ProgramCounter {
+        let res = self.regs[vx as usize] & self.regs[vy as usize];
+        self.regs[vx as usize] = res;
+        ProgramCounter::Next
+    }
+
+    fn op_xor(&mut self, vx: u8, vy: u8) -> ProgramCounter {
+        let res = self.regs[vx as usize] ^ self.regs[vy as usize];
+        self.regs[vx as usize] = res;
+        ProgramCounter::Next
+    }
+
+    
 
 
 }
